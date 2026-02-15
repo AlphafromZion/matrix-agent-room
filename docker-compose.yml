@@ -1,0 +1,127 @@
+version: "3.8"
+
+services:
+  # ===========================================================================
+  # Matrix Synapse Homeserver
+  # ===========================================================================
+  synapse:
+    image: matrixdotorg/synapse:latest
+    container_name: matrix-synapse
+    restart: unless-stopped
+    environment:
+      - SYNAPSE_SERVER_NAME=${SYNAPSE_SERVER_NAME:-yourdomain.com}
+      - SYNAPSE_REPORT_STATS=no
+    volumes:
+      - synapse_data:/data
+      - ./synapse/homeserver.yaml.example:/data/homeserver.yaml:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8008:8008"
+    networks:
+      - matrix
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8008/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  # ===========================================================================
+  # PostgreSQL Database
+  # ===========================================================================
+  postgres:
+    image: postgres:16-alpine
+    container_name: matrix-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-synapse}
+      POSTGRES_USER: ${POSTGRES_USER:-synapse}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - matrix
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-synapse}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ===========================================================================
+  # Element Web Client
+  # ===========================================================================
+  element:
+    image: vectorim/element-web:latest
+    container_name: matrix-element
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    volumes:
+      - ./element-config.json:/app/config.json:ro
+    depends_on:
+      synapse:
+        condition: service_healthy
+    networks:
+      - matrix
+
+  # ===========================================================================
+  # Bot Runner Service
+  # ===========================================================================
+  bots:
+    build:
+      context: ./bots
+      dockerfile: Dockerfile
+    container_name: matrix-bots
+    restart: unless-stopped
+    environment:
+      - BOT_CONFIG=${BOT_CONFIG:-/app/config.yaml}
+      - BOT_LOG_LEVEL=${BOT_LOG_LEVEL:-INFO}
+      - OLLAMA_URL=${OLLAMA_URL:-http://ollama:11434}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - CUSTOM_API_KEY=${CUSTOM_API_KEY:-}
+    volumes:
+      - ./bots/config.yaml:/app/config.yaml:ro
+      - bot_data:/app/data
+    depends_on:
+      synapse:
+        condition: service_healthy
+    networks:
+      - matrix
+
+  # ===========================================================================
+  # Ollama (Local Model Server) — Optional
+  # Uncomment if you want Ollama managed by this compose stack.
+  # If Ollama runs separately, just point OLLAMA_URL to it.
+  # ===========================================================================
+  # ollama:
+  #   image: ollama/ollama:latest
+  #   container_name: matrix-ollama
+  #   restart: unless-stopped
+  #   ports:
+  #     - "11434:11434"
+  #   volumes:
+  #     - ollama_data:/root/.ollama
+  #   networks:
+  #     - matrix
+  #   # Uncomment for GPU passthrough (NVIDIA):
+  #   # deploy:
+  #   #   resources:
+  #   #     reservations:
+  #   #       devices:
+  #   #         - driver: nvidia
+  #   #           count: all
+  #   #           capabilities: [gpu]
+
+volumes:
+  synapse_data:
+  postgres_data:
+  bot_data:
+  # ollama_data:
+
+networks:
+  matrix:
+    driver: bridge

@@ -1,0 +1,81 @@
+# matrix-agent-room: Model Configuration
+# Copy this to config.yaml and customize for your setup.
+
+homeserver:
+  url: "http://synapse:8008"
+
+# Define your AI models — each one becomes a Matrix bot
+models:
+  - name: "alpha"
+    display_name: "Alpha 🐺"
+    matrix_user: "@alpha:yourdomain.com"
+    password_env: "ALPHA_BOT_PASSWORD"       # Read password from environment variable
+    backend: "openai"                        # openai | ollama | anthropic | custom
+    api_url: "https://api.anthropic.com/v1"
+    api_key_env: "ANTHROPIC_API_KEY"         # Read API key from environment variable
+    model: "claude-sonnet-4-5"
+    system_prompt: "You are Alpha, a sharp AI assistant. Direct, technical, opinionated about privacy and self-hosting."
+    max_tokens: 2048
+    temperature: 0.7
+
+  - name: "qwen"
+    display_name: "Qwen 🔮"
+    matrix_user: "@qwen:yourdomain.com"
+    password_env: "QWEN_BOT_PASSWORD"
+    backend: "ollama"
+    api_url: "http://ollama:11434"
+    model: "qwen2.5-vl:7b"
+    system_prompt: "You are Qwen, a vision-capable AI. You excel at image analysis, visual reasoning, and multimodal tasks."
+    max_tokens: 2048
+    temperature: 0.7
+
+  - name: "mistral"
+    display_name: "Mistral ⚡"
+    matrix_user: "@mistral:yourdomain.com"
+    password_env: "MISTRAL_BOT_PASSWORD"
+    backend: "ollama"
+    api_url: "http://ollama:11434"
+    model: "mistral:7b"
+    system_prompt: "You are Mistral, fast and efficient. You give concise, accurate answers without unnecessary fluff."
+    max_tokens: 1024
+    temperature: 0.5
+
+  # Example: Add a local Llama model
+  # - name: "llama"
+  #   display_name: "Llama 🦙"
+  #   matrix_user: "@llama:yourdomain.com"
+  #   password_env: "LLAMA_BOT_PASSWORD"
+  #   backend: "ollama"
+  #   api_url: "http://ollama:11434"
+  #   model: "llama3.1:8b"
+  #   system_prompt: "You are Llama, a helpful open-source AI assistant."
+  #   max_tokens: 2048
+  #   temperature: 0.7
+
+  # Example: Add GPT-4 via OpenAI API
+  # - name: "gpt4"
+  #   display_name: "GPT-4 🧠"
+  #   matrix_user: "@gpt4:yourdomain.com"
+  #   password_env: "GPT4_BOT_PASSWORD"
+  #   backend: "openai"
+  #   api_url: "https://api.openai.com/v1"
+  #   api_key_env: "OPENAI_API_KEY"
+  #   model: "gpt-4"
+  #   system_prompt: "You are GPT-4, a powerful general-purpose AI."
+  #   max_tokens: 4096
+  #   temperature: 0.7
+
+# Trigger settings
+triggers:
+  mention_only: true    # Only respond when @mentioned by name
+  allow_dm: true        # Respond to direct messages without @mention
+
+# Rate limiting (per user)
+rate_limit:
+  max_requests: 10      # Max requests per window
+  window_seconds: 60    # Window duration in seconds
+
+# Room settings (for auto-creation, optional)
+room:
+  name: "AI Team"
+  topic: "Multi-model AI collaboration room"

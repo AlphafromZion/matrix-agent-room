@@ -1,0 +1,46 @@
+# Environment files (contain secrets)
+.env
+.env.local
+.env.production
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+
+# Bot data
+bots/data/
+bot_data/
+
+# Synapse data
+synapse/data/
+synapse/*.signing.key
+synapse/*.log.config
+
+# Docker volumes
+postgres_data/
+synapse_data/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Secrets (catch-all)
+*.pem
+*.key
+*.crt
+*.p12
+credentials*
+secrets*

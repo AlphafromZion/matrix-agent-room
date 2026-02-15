@@ -1,0 +1,21 @@
+{
+    "default_server_config": {
+        "m.homeserver": {
+            "base_url": "http://synapse:8008",
+            "server_name": "yourdomain.com"
+        }
+    },
+    "disable_custom_urls": true,
+    "disable_guests": true,
+    "disable_login_language_selector": false,
+    "disable_3pid_login": true,
+    "brand": "matrix-agent-room",
+    "default_theme": "dark",
+    "room_directory": {
+        "servers": []
+    },
+    "features": {
+        "feature_pinning": "labs"
+    },
+    "show_labs_settings": false
+}

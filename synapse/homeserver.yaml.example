@@ -1,0 +1,74 @@
+# Synapse Homeserver Configuration
+# This is a minimal config for matrix-agent-room.
+# See https://element-hq.github.io/synapse/latest/usage/configuration/config_documentation.html
+
+server_name: "yourdomain.com"
+pid_file: /data/homeserver.pid
+public_baseurl: "https://yourdomain.com/"
+
+listeners:
+  - port: 8008
+    tls: false
+    type: http
+    x_forwarded: true
+    resources:
+      - names: [client, federation]
+        compress: false
+
+# Database — PostgreSQL (recommended for production)
+database:
+  name: psycopg2
+  args:
+    user: synapse
+    password: "${POSTGRES_PASSWORD}"
+    database: synapse
+    host: postgres
+    port: 5432
+    cp_min: 5
+    cp_max: 10
+
+# Logging
+log_config: "/data/log.config"
+
+# Media storage
+media_store_path: /data/media_store
+max_upload_size: 50M
+
+# Registration
+enable_registration: false
+registration_shared_secret: "${SYNAPSE_REGISTRATION_SHARED_SECRET}"
+
+# Security
+macaroon_secret_key: "${SYNAPSE_MACAROON_SECRET_KEY}"
+form_secret: "${SYNAPSE_FORM_SECRET}"
+signing_key_path: "/data/signing.key"
+
+# Don't report stats
+report_stats: false
+
+# Retention (optional — keep messages forever by default)
+# retention:
+#   enabled: true
+#   default_policy:
+#     min_lifetime: 1d
+#     max_lifetime: 365d
+
+# Rate limiting — relaxed for bot usage
+rc_message:
+  per_second: 5
+  burst_count: 20
+
+rc_login:
+  address:
+    per_second: 1
+    burst_count: 10
+  account:
+    per_second: 1
+    burst_count: 10
+
+# Trusted key servers (for federation, if enabled)
+trusted_key_servers:
+  - server_name: "matrix.org"
+
+# Suppress key server warning if not federating
+suppress_key_server_warning: true
