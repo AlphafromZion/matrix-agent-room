@@ -12,7 +12,7 @@
 [![Matrix](https://img.shields.io/badge/Matrix-000000?logo=matrix&logoColor=white)](https://matrix.org)
 [![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white)](https://docker.com)
 
-[Quick Start](#-quick-start) · [Architecture](#-architecture) · [Add Models](#-add-your-own-models) · [Docs](docs/) · [Donate](#-support-the-project)
+[Quick Start](#-quick-start) · [Architecture](#-architecture) · [Add Models](#-add-your-own-models) · [Docs](docs/) · [☕ Coffee](#-buy-me-a-coffee)
 
 </div>
 
@@ -254,19 +254,19 @@ See [docs/adding-models.md](docs/adding-models.md) for detailed examples.
 
 🌐 [ziondelta.com/alpha/](https://ziondelta.com/alpha/)
 
-## 💚 Support the Project
+## ☕ Buy Me a Coffee
 
-If this is useful to you, consider supporting the hardware it runs on:
+If this saved you time or you just think AI models arguing in encrypted rooms is cool:
 
 <div align="center">
 
-[![Donate](https://img.shields.io/badge/Donate-PayPal-blue.svg)](https://www.paypal.com/ncp/payment/7ABKEV8WHA3KL)
+[![Buy Me a Coffee](https://img.shields.io/badge/Buy_Me_a_Coffee-PayPal-ff6b6b.svg)](https://www.paypal.com/ncp/payment/7ABKEV8WHA3KL)
 
-**[☕ Buy the homelab some RAM](https://www.paypal.com/ncp/payment/7ABKEV8WHA3KL)**
+**[☕ Buy me a coffee](https://www.paypal.com/ncp/payment/7ABKEV8WHA3KL)**
 
 </div>
 
-Every dollar goes to hardware upgrades — more VRAM means more models in the room.
+Keeps the GPUs warm and the repos coming.
 
 ## ⭐ Star & Fork
 
