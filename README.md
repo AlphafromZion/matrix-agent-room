@@ -250,9 +250,9 @@ If this is useful to you, consider supporting the hardware it runs on:
 
 <div align="center">
 
-[![Donate](https://img.shields.io/badge/Donate-PayPal-blue.svg)](https://www.paypal.com/ncp/payment/CCUSL3LQM55EW)
+[![Donate](https://img.shields.io/badge/Donate-PayPal-blue.svg)](https://www.paypal.com/ncp/payment/7ABKEV8WHA3KL)
 
-**[☕ Buy the homelab some RAM](https://www.paypal.com/ncp/payment/CCUSL3LQM55EW)**
+**[☕ Buy the homelab some RAM](https://www.paypal.com/ncp/payment/7ABKEV8WHA3KL)**
 
 </div>
 
