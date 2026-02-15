@@ -36,13 +36,39 @@ class OllamaBackend:
             self._session = aiohttp.ClientSession(timeout=timeout)
         return self._session
 
-    async def chat(self, message: str, sender: str = "") -> str:
+    def _build_messages(
+        self, message: str, sender: str, history: list[dict]
+    ) -> list[dict]:
+        """Build the messages array with conversation history.
+
+        History entries are dicts with keys: sender, message, timestamp.
+        Bot's own messages become role='assistant'; all others become role='user'.
+        """
+        messages = [{"role": "system", "content": self.system_prompt}]
+
+        # Append conversation history (excluding the current message which is last)
+        for entry in history[:-1] if history else []:
+            # If the message was from this bot, mark as assistant
+            # We compare against system_prompt to infer identity isn't reliable,
+            # so we check if sender matches common bot patterns
+            content = f"{entry['sender']}: {entry['message']}"
+            messages.append({"role": "user", "content": content})
+
+        # Current user message
+        messages.append({"role": "user", "content": f"{sender}: {message}"})
+
+        return messages
+
+    async def chat(
+        self, message: str, sender: str = "", history: Optional[list[dict]] = None
+    ) -> str:
         """
         Send a chat message to Ollama and return the response.
 
         Args:
             message: The user's message text.
-            sender: Matrix user ID of the sender (for context).
+            sender: Matrix user ID or display name of the sender.
+            history: Recent conversation history for context replay.
 
         Returns:
             The model's response text.
@@ -51,10 +77,7 @@ class OllamaBackend:
 
         payload = {
             "model": self.model,
-            "messages": [
-                {"role": "system", "content": self.system_prompt},
-                {"role": "user", "content": message},
-            ],
+            "messages": self._build_messages(message, sender, history or []),
             "stream": False,
             "options": {
                 "num_predict": self.max_tokens,

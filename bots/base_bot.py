@@ -5,6 +5,7 @@ and routes messages to configured AI backends.
 """
 
 import asyncio
+import collections
 import logging
 import os
 import time
@@ -24,6 +25,33 @@ from ollama_bot import OllamaBackend
 from openai_bot import OpenAIBackend
 
 logger = logging.getLogger("matrix-agent-room")
+
+
+class ConversationBuffer:
+    """
+    Ring buffer that stores recent messages per room for context replay.
+    Each entry is a dict with keys: sender, message, timestamp.
+    """
+
+    def __init__(self, max_size: int = 10):
+        self.max_size = max_size
+        self._buffers: dict[str, collections.deque] = {}
+
+    def add(self, room_id: str, sender: str, message: str, timestamp: float) -> None:
+        """Add a message to the room's conversation buffer."""
+        if room_id not in self._buffers:
+            self._buffers[room_id] = collections.deque(maxlen=self.max_size)
+        self._buffers[room_id].append({
+            "sender": sender,
+            "message": message,
+            "timestamp": timestamp,
+        })
+
+    def get_history(self, room_id: str) -> list[dict]:
+        """Return the conversation history for a room as a list of dicts."""
+        if room_id not in self._buffers:
+            return []
+        return list(self._buffers[room_id])
 
 
 class RateLimiter:
@@ -118,10 +146,18 @@ class AgentBot:
             logger.error(f"[{self.name}] Login failed: {response}")
             return False
 
-    async def generate_response(self, message: str, sender: str) -> str:
-        """Generate a response using the configured backend."""
+    async def generate_response(
+        self, message: str, sender: str, history: Optional[list[dict]] = None
+    ) -> str:
+        """Generate a response using the configured backend.
+
+        Args:
+            message: The cleaned user message.
+            sender: Display name or Matrix user ID of the sender.
+            history: Recent conversation history for context replay.
+        """
         try:
-            return await self.backend.chat(message, sender)
+            return await self.backend.chat(message, sender, history=history or [])
         except Exception as e:
             logger.error(f"[{self.name}] Backend error: {e}")
             return f"⚠️ Sorry, I encountered an error: {type(e).__name__}"
@@ -152,6 +188,10 @@ class BotOrchestrator:
         self._processed_events: set[str] = set()
         # Listener client (we use the first bot's client to sync)
         self._listener_client: Optional[AsyncClient] = None
+
+        # Conversation context buffer (shared across all bots)
+        context_window = self.config.get("context_window", 10)
+        self.conversation_buffer = ConversationBuffer(max_size=context_window)
 
     @staticmethod
     def _load_config(path: str) -> dict:
@@ -268,9 +308,24 @@ class BotOrchestrator:
             if self.mention_only and not is_mentioned and not (self.allow_dm and is_dm):
                 return
 
+            # Resolve sender display name for context
+            sender_display = sender
+            if sender in room.users and room.users[sender].display_name:
+                sender_display = room.users[sender].display_name
+
             logger.info(
-                f"[{listening_bot.name}] Message from {sender} in {room.display_name}: "
-                f"{message[:100]}..."
+                f"[{listening_bot.name}] Message from {sender_display} in "
+                f"{room.display_name}: {message[:100]}..."
+            )
+
+            # Add incoming message to conversation buffer BEFORE generating response
+            msg_timestamp = (
+                event.server_timestamp / 1000.0
+                if hasattr(event, "server_timestamp")
+                else time.time()
+            )
+            self.conversation_buffer.add(
+                room.room_id, sender_display, message, msg_timestamp
             )
 
             # Send typing indicator
@@ -284,7 +339,11 @@ class BotOrchestrator:
             for mention in [f"@{listening_bot.name}", listening_bot.matrix_user]:
                 clean_message = clean_message.replace(mention, "").strip()
 
-            response = await listening_bot.generate_response(clean_message, sender)
+            # Pass conversation history for context replay
+            history = self.conversation_buffer.get_history(room.room_id)
+            response = await listening_bot.generate_response(
+                clean_message, sender_display, history=history
+            )
 
             # Stop typing indicator
             await listening_bot.client.room_typing(
@@ -301,6 +360,14 @@ class BotOrchestrator:
                     "format": "org.matrix.custom.html",
                     "formatted_body": response,
                 },
+            )
+
+            # Add bot's own response to the buffer for other bots' context
+            self.conversation_buffer.add(
+                room.room_id,
+                listening_bot.display_name,
+                response,
+                time.time(),
             )
 
             logger.info(f"[{listening_bot.name}] Responded ({len(response)} chars)")

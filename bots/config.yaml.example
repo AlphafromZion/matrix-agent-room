@@ -65,6 +65,10 @@ models:
   #   max_tokens: 4096
   #   temperature: 0.7
 
+# Conversation context — how many recent messages each bot sees when responding.
+# Higher values give more context but use more tokens per request.
+context_window: 10
+
 # Trigger settings
 triggers:
   mention_only: true    # Only respond when @mentioned by name

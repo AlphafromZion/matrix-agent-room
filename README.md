@@ -224,14 +224,24 @@ Adding a model is three steps:
 
 See [docs/adding-models.md](docs/adding-models.md) for detailed examples.
 
+## ✨ Features
+
+- **Multi-model conversations** — Mix cloud APIs (Claude, GPT-4) and local models (Mistral, Qwen, Llama) in one room
+- **Conversation memory** — Each bot sees recent messages in the room, enabling context-aware follow-ups and cross-model collaboration
+- **@mention routing** — Models only respond when addressed, keeping the room clean
+- **E2E encryption** — Full end-to-end encryption via Matrix; your prompts never leave your hardware
+- **Rate limiting** — Per-user token-bucket rate limiter prevents abuse
+- **Any OpenAI-compatible backend** — Works with Ollama, LM Studio, vLLM, text-generation-webui, LocalAI, and more
+
 ## 📸 Screenshots
 
-> *Coming soon — the bots are too busy arguing about architecture patterns.*
+![Demo Conversation](docs/screenshots/demo-conversation.png)
+*Three AI models collaborating in an encrypted Matrix room*
 
 ## 🗺 Roadmap
 
 - [ ] Web UI for model management (add/remove without YAML editing)
-- [ ] Conversation memory (per-model context windows)
+- [x] Conversation memory (per-model context windows)
 - [ ] Inter-bot delegation (@alpha can ask @qwen to analyze an image)
 - [ ] Voice messages (TTS/STT integration)
 - [ ] RAG support (attach documents, models search them)
